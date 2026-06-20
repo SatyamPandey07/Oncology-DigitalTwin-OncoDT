@@ -6,14 +6,14 @@ An advanced React-based digital twin application designed for clinicians and pat
 
 ## Key Features
 
-### 🩺 Clinician Portal
+### Clinician Portal
 - **Patient Directory**: Manage clinical states, cancer types (e.g., Breast, Lung, Colorectal), and active regimens.
 - **Biomarker & Genomic Profiling**: Assess HER2, ER/PR, BRCA mutation status, and Ki-67 proliferative indices.
 - **Regimen Simulator**: Set treatment type (Chemotherapy, Targeted, Immunotherapy, or Combination), cycle frequency, dosage intensity, and anticipated adherence rate.
 - **Real-Time Visual Analytics**: Interactive dual-axis charts plotting tumor diameter/volume, PK drug concentration/efficacy, systemic toxicity levels, and patient health.
 - **Nadir and Toxicity Analysis**: Track nadir values (lowest tumor volume reached), timeline milestones, and toxicity flags (e.g., high-risk thresholds, cardiac burden).
 
-### 👤 Patient Portal
+### Patient Portal
 - **My Profile**: Access current status, diagnosis details, stage, and primary physician contact.
 - **Vitals Monitoring**: Interactive gauges tracking heart rate, blood pressure, temperature, white blood cell (WBC) count, and overall systemic health score.
 - **Treatment Timeline**: Track scheduled vs. completed therapy cycles, dosage logs, and upcoming procedures.
@@ -21,7 +21,7 @@ An advanced React-based digital twin application designed for clinicians and pat
 
 ---
 
-## 🖥️ Interface Previews & Explanations
+## Interface Previews & Explanations
 
 ### 1. Unified Authentication Gate (Clinician & Patient Portals)
 ![ONCOGEN-DT Login Page](./public/screenshots/login.png)
@@ -37,7 +37,7 @@ An advanced React-based digital twin application designed for clinicians and pat
 
 ---
 
-## 🧪 Simulation Architecture & Mathematical Models
+## Simulation Architecture & Mathematical Models
 
 The digital twin simulator runs on a separate thread via **Web Workers** (`src/simulationWorker.js`) to keep the main UI thread lag-free during intense computations. It combines three clinical models:
 
@@ -59,7 +59,7 @@ The digital twin simulator runs on a separate thread via **Web Workers** (`src/s
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Framework**: React 18 (Vite-powered for fast bundling and HMR)
 - **Styling**: TailwindCSS & PostCSS for a modern, responsive design system
@@ -70,7 +70,7 @@ The digital twin simulator runs on a separate thread via **Web Workers** (`src/s
 
 ---
 
-## 📁 Directory Structure
+## Directory Structure
 
 ```text
 ├── public/                 # Static assets (Favicons, images)
@@ -102,13 +102,13 @@ The digital twin simulator runs on a separate thread via **Web Workers** (`src/s
 
 ---
 
-## 🏁 Getting Started
+## Getting Started
 
 ### 📋 Prerequisites
 - **Node.js**: `v18.x` or higher
 - **npm**: `v9.x` or higher
 
-### 🔧 Installation
+### Installation
 1. Clone the repository or navigate to the project directory:
    ```bash
    git clone https://github.com/SatyamPandey07/oncology-digital-twin-simulator.git
@@ -127,7 +127,7 @@ The digital twin simulator runs on a separate thread via **Web Workers** (`src/s
 
 4. Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-### 📦 Build & Deploy
+### Build & Deploy
 To create a production-optimized build:
 ```bash
 npm run build

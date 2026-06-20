@@ -4,7 +4,7 @@ An advanced React-based digital twin application designed for clinicians and pat
 
 ---
 
-## 🚀 Key Features
+## Key Features
 
 ### 🩺 Clinician Portal
 - **Patient Directory**: Manage clinical states, cancer types (e.g., Breast, Lung, Colorectal), and active regimens.

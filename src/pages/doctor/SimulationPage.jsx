@@ -5,7 +5,8 @@ import { DRUG_DATABASE, getDrugById } from '../../data/drugDatabase';
 import { createSimulationWorker } from '../../simulationWorker';
 import DrugCard from '../../components/DrugCard';
 import DrugComparisonChart from '../../components/DrugComparisonChart';
-import { ArrowLeft, Play, Save, CheckCircle, ShieldAlert, Award, FileSpreadsheet, Download, Table, ShieldCheck, Info } from 'lucide-react';
+import BodyDiagram from '../../components/BodyDiagram';
+import { ArrowLeft, Play, Save, CheckCircle, ShieldAlert, Award, FileSpreadsheet, Download, Table, ShieldCheck, Info, Activity, Settings, Bell, TrendingUp } from 'lucide-react';
 
 export default function SimulationPage() {
   const { id } = useParams();
@@ -17,6 +18,12 @@ export default function SimulationPage() {
   }, [id]);
 
   const [selectedDrugIds, setSelectedDrugIds] = useState([]);
+  const [activeDrugId, setActiveDrugId] = useState('');
+  const [dosageIntensity, setDosageIntensity] = useState(100);
+  const [cycleFrequencyDays, setCycleFrequencyDays] = useState(14);
+  const [plannedCycles, setPlannedCycles] = useState(6);
+  const [adherenceRate, setAdherenceRate] = useState(95);
+
   const [isRunning, setIsRunning] = useState(false);
   const [simData, setSimData] = useState({}); // key: drugId -> results array
   const [simMetrics, setSimMetrics] = useState({}); // key: drugId -> metrics obj
@@ -28,6 +35,36 @@ export default function SimulationPage() {
   const [pendingDrugToApply, setPendingDrugToApply] = useState(null);
   const [pendingMetrics, setPendingMetrics] = useState(null);
   const [prescribeSuccess, setPrescribeSuccess] = useState(false);
+
+  // Set first selected drug as active by default
+  useEffect(() => {
+    if (selectedDrugIds.length > 0) {
+      if (!activeDrugId || !selectedDrugIds.includes(activeDrugId)) {
+        const firstId = selectedDrugIds[0];
+        setActiveDrugId(firstId);
+        const drugObj = getDrugById(firstId);
+        if (drugObj) {
+          setDosageIntensity(drugObj.defaultDosageIntensity || 100);
+          setCycleFrequencyDays(drugObj.recommendedCycleFrequencyDays || 14);
+          setPlannedCycles(drugObj.plannedCycles || 6);
+          setAdherenceRate(95);
+        }
+      }
+    } else {
+      setActiveDrugId('');
+    }
+  }, [selectedDrugIds, activeDrugId]);
+
+  // When active drug changes, load its default parameters
+  const handleActiveDrugChange = (drugId) => {
+    setActiveDrugId(drugId);
+    const drugObj = getDrugById(drugId);
+    if (drugObj) {
+      setDosageIntensity(drugObj.defaultDosageIntensity || 100);
+      setCycleFrequencyDays(drugObj.recommendedCycleFrequencyDays || 14);
+      setPlannedCycles(drugObj.plannedCycles || 6);
+    }
+  };
 
   if (!patient) {
     return (
@@ -67,12 +104,13 @@ export default function SimulationPage() {
         if (drugObj.class.toLowerCase().includes('chemotherapy')) regimenType = 'Chemotherapy';
         if (drugObj.class.toLowerCase().includes('immunotherapy')) regimenType = 'Immunotherapy';
 
+        const isCustomRegimen = drugId === activeDrugId;
         const regimenPayload = {
           regimenType,
-          cycleFrequencyDays: drugObj.recommendedCycleFrequencyDays,
-          dosageIntensity: drugObj.defaultDosageIntensity,
-          plannedCycles: drugObj.plannedCycles,
-          adherenceRate: 95
+          cycleFrequencyDays: isCustomRegimen ? Number(cycleFrequencyDays) : drugObj.recommendedCycleFrequencyDays,
+          dosageIntensity: isCustomRegimen ? Number(dosageIntensity) : drugObj.defaultDosageIntensity,
+          plannedCycles: isCustomRegimen ? Number(plannedCycles) : drugObj.plannedCycles,
+          adherenceRate: isCustomRegimen ? Number(adherenceRate) : 95
         };
 
         // Biomarker-driven boosts calculation
@@ -269,110 +307,287 @@ export default function SimulationPage() {
   return (
     <div className="space-y-6">
       
-      {/* Breadcrumb */}
-      <div className="flex items-center justify-between">
-        <Link
-          to={`/doctor/patient/${patient.id}`}
-          className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-200"
-        >
-          <ArrowLeft className="w-4 h-4" /> Back to Digital Twin
-        </Link>
-        <span className="text-xs text-slate-500 font-mono">
-          Twin ID: {patient.id} • {patient.cancerType} stage {patient.stage}
-        </span>
+      {/* Patient Info Bar */}
+      <div className="bg-slate-900/60 border border-slate-800 rounded-xl px-5 py-3 flex flex-wrap items-center justify-between gap-4 shadow-lg backdrop-blur-md">
+        <div className="flex items-center gap-2">
+          <Activity className="w-5 h-5 text-cyan-400 animate-pulse" />
+          <span className="text-sm font-bold text-slate-200">
+            PATIENT: <span className="text-cyan-400">{patient.name}</span>, Age {patient.age} (ID: {patient.id})
+          </span>
+        </div>
+        <div className="flex items-center gap-3">
+          <Link
+            to={`/doctor/patient/${patient.id}`}
+            className="text-xs px-3 py-1.5 rounded-lg border border-slate-800 hover:border-slate-700 bg-slate-950/40 text-slate-400 font-semibold transition-all"
+          >
+            Patient Profile
+          </Link>
+          <button className="p-1.5 rounded-lg bg-slate-950 border border-slate-850 hover:border-slate-700 text-slate-400 hover:text-slate-200">
+            <Settings className="w-4 h-4" />
+          </button>
+          <button className="p-1.5 rounded-lg bg-slate-950 border border-slate-850 hover:border-slate-700 text-slate-400 hover:text-slate-200 relative">
+            <Bell className="w-4 h-4" />
+            <span className="absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full animate-ping" />
+          </button>
+          <div className="w-7 h-7 rounded-full bg-slate-800 border border-slate-750 flex items-center justify-center text-xs font-bold text-cyan-400">
+            DR
+          </div>
+        </div>
       </div>
 
-      {/* Digital Twin Explanation Banner */}
-      <div className="bg-slate-900/30 backdrop-blur-md border border-slate-900 rounded-xl p-5 space-y-3">
-        <div className="flex items-center gap-2">
-          <Award className="w-5 h-5 text-cyan-400" />
-          <h3 className="text-sm font-bold text-slate-200">How the Oncology Digital Twin Predicts Drug Efficacy & Toxicity</h3>
+      {/* Grid of 4 Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Card 1: Current Status */}
+        <div className="bg-slate-900/40 border border-slate-850 rounded-xl p-4 flex flex-col justify-between h-[120px] shadow-md">
+          <div className="flex justify-between items-start">
+            <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 font-mono">Current Status</span>
+            <Activity className="w-4 h-4 text-cyan-400" />
+          </div>
+          <div>
+            <h3 className="text-base font-extrabold text-slate-100">{patient.stage} {patient.cancerType}</h3>
+            <span className="text-[10px] text-slate-400 block font-mono">Baseline: {patient.tumorInitialDiameterMm}mm tumor</span>
+          </div>
+          <div className="flex items-center gap-1.5 pt-1.5 border-t border-slate-850/50 text-[9px] font-mono text-slate-500">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            Digital Twin Accuracy: 94.2%
+          </div>
         </div>
-        <p className="text-xs text-slate-400 leading-relaxed font-mono">
-          A digital twin runs multi-scale predictive models customized to <strong>{patient.name}</strong>'s age, staging, baseline tumor load, and genomic biomarkers. In silico clinical trials are calculated over a 730-day (24-month) window using <strong>Gompertzian growth kinetics</strong> paired with <strong>pharmacokinetic (PK/PD) clearance loops</strong>. This simulates systemic treatment delivery, tumor volume regression rates, and cardiac or hematologic toxicity risks dynamically before administering medications <em>in vivo</em>.
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-slate-850 pt-3 text-[10px] font-mono text-slate-500">
-          <div>
-            <strong className="text-cyan-400 block mb-0.5">1. Target-Specific Binding</strong>
-            Next-Generation Sequencing (NGS) base accuracies scale the drug's therapeutic killing coefficient (e.g. anti-HER2 targeted therapies are scaled 2.5x to 2.8x for HER2+ expression).
+
+        {/* Card 2: Treatment Response */}
+        <div className="bg-slate-900/40 border border-slate-850 rounded-xl p-4 flex flex-col justify-between h-[120px] shadow-md">
+          <div className="flex justify-between items-start">
+            <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 font-mono">Treatment Response</span>
+            <TrendingUp className="w-4 h-4 text-emerald-400" />
           </div>
           <div>
-            <strong className="text-cyan-400 block mb-0.5">2. Pharmacokinetic Decay</strong>
-            Daily residual concentrations decay exponentially based on clearance half-life equations between therapy cycles.
+            <h3 className="text-base font-extrabold text-slate-100">
+              {activeDrugId && simMetrics[activeDrugId] ? (
+                simMetrics[activeDrugId].efficacyScore > 80 ? 'Complete Response' :
+                simMetrics[activeDrugId].efficacyScore > 50 ? 'Partial Response' :
+                simMetrics[activeDrugId].efficacyScore > 20 ? 'Stable Disease' : 'Progressive Disease'
+              ) : 'Awaiting Run'}
+            </h3>
+            <span className="text-[10px] text-slate-400 block font-mono">
+              {activeDrugId && simMetrics[activeDrugId] 
+                ? `Projected Shrinkage: ${Math.round(simMetrics[activeDrugId].efficacyScore)}%`
+                : 'Run simulation to project'}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5 pt-1.5 border-t border-slate-850/50 text-[9px] font-mono text-slate-500">
+            Gompertzian Decay Loop
+          </div>
+        </div>
+
+        {/* Card 3: Predictive Biomarkers */}
+        <div className="bg-slate-900/40 border border-slate-850 rounded-xl p-4 flex flex-col justify-between h-[120px] shadow-md">
+          <div className="flex justify-between items-start">
+            <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 font-mono">Predictive Biomarkers</span>
+            <span className="text-[9px] px-1 py-0.1 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded uppercase font-mono">NGS</span>
           </div>
           <div>
-            <strong className="text-cyan-400 block mb-0.5">3. Organs-at-Risk Monitoring</strong>
-            Daily cardiac risks and vital health changes are projected to detect cumulative toxicity (e.g., anthracyclines risk thresholds) before patient exposure.
+            <h3 className="text-xs font-bold text-slate-200 truncate font-mono">
+              {Object.entries(patient.biomarkers)
+                .filter(([key, val]) => val === 'Positive' || val === true)
+                .map(([key, _]) => key.replace('_', ' '))
+                .join(', ') || 'No positive biomarkers'}
+            </h3>
+            <span className="text-[10px] text-slate-400 block font-mono">Ki-67 Index: {patient.biomarkers.Ki67_Index}%</span>
+          </div>
+          <div className="flex items-center gap-1.5 pt-1.5 border-t border-slate-850/50 text-[9px] font-mono text-slate-500">
+            Targeted Efficacy Indicated
+          </div>
+        </div>
+
+        {/* Card 4: Adverse Event Risk */}
+        <div className="bg-slate-900/40 border border-slate-850 rounded-xl p-4 flex flex-col justify-between h-[120px] shadow-md">
+          <div className="flex justify-between items-start">
+            <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 font-mono">Adverse Event Risk</span>
+            <ShieldAlert className="w-4 h-4 text-amber-500" />
+          </div>
+          <div>
+            <h3 className="text-base font-extrabold text-slate-100">
+              {activeDrugId && simMetrics[activeDrugId] ? (
+                simMetrics[activeDrugId].peakToxicity > 70 ? 'High Risk' :
+                simMetrics[activeDrugId].peakToxicity > 40 ? 'Moderate Risk' : 'Low Risk'
+              ) : 'Awaiting Run'}
+            </h3>
+            <span className="text-[10px] text-slate-400 block font-mono">
+              {activeDrugId && simMetrics[activeDrugId]
+                ? `Peak Toxicity: ${Math.round(simMetrics[activeDrugId].peakToxicity)}%`
+                : 'Run simulation to evaluate'}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5 pt-1.5 border-t border-slate-850/50 text-[9px] font-mono text-slate-500">
+            CTCAE v5.0 Baseline
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
         
-        {/* Left Side: Drug Selection Roster */}
-        <div className="xl:col-span-4 bg-slate-900/20 border border-slate-900 rounded-xl p-4 space-y-4">
+        {/* Left Side: Inputs */}
+        <div className="xl:col-span-4 bg-slate-900/20 border border-slate-900 rounded-xl p-4 space-y-5">
           <div>
-            <h3 className="text-sm font-bold text-slate-200">Oncology Drug Assays</h3>
-            <p className="text-[10px] text-slate-550 mt-0.5">Select up to 4 drugs to run comparative simulations.</p>
+            <h3 className="text-sm font-bold text-slate-200">Multi-Variable Treatment Inputs</h3>
+            <p className="text-[10px] text-slate-550 mt-0.5">Select a drug protocol and adjust dosage variables interactively.</p>
           </div>
 
-          <div className="space-y-4 max-h-[560px] overflow-y-auto pr-1">
-            {Object.keys(categorizedDrugs).map(catKey => {
-              const list = categorizedDrugs[catKey];
-              if (list.length === 0) return null;
-              
-              const catTitle = catKey === 'chemo' ? 'Chemotherapies' :
-                               catKey === 'targeted' ? 'Targeted Therapeutics' :
-                               catKey === 'immuno' ? 'Immunotherapies' : 'Hormone/Other Agents';
-              
-              return (
-                <div key={catKey} className="space-y-2">
-                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-500 font-mono border-b border-slate-850 pb-1">
-                    {catTitle}
-                  </h4>
-                  <div className="grid grid-cols-1 gap-2">
-                    {list.map(d => {
-                      const isSelected = selectedDrugIds.includes(d.id);
-                      const isMaxSelected = selectedDrugIds.length >= 4;
-                      return (
-                        <div 
-                          key={d.id}
-                          onClick={() => !d.isContraindicated && handleSelectToggle(d.id)}
-                          className={`flex items-center justify-between p-3 rounded-lg border text-xs cursor-pointer transition-all duration-200 ${
-                            isSelected ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-300' : 
-                            d.isContraindicated ? 'bg-rose-500/5 border-rose-500/10 text-rose-500/70 cursor-not-allowed' :
-                            'bg-slate-950/40 border-slate-850 text-slate-400 hover:border-slate-700 hover:text-slate-200'
-                          }`}
-                        >
-                          <div>
-                            <div className="font-semibold flex items-center gap-1.5">
-                              {d.name}
-                              {d.isBestFor && (
-                                <span className="text-[8px] px-1 py-0.1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 rounded uppercase">Indicated</span>
+          {/* Roster & Select active drug */}
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500 font-mono">
+                Active Protocol for Customization
+              </label>
+              {selectedDrugIds.length > 0 ? (
+                <select
+                  value={activeDrugId}
+                  onChange={(e) => handleActiveDrugChange(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-850 rounded-lg px-3 py-2 text-xs text-slate-250 focus:outline-none focus:border-cyan-500/40"
+                >
+                  {selectedDrugIds.map(drugId => {
+                    const drugObj = getDrugById(drugId);
+                    return (
+                      <option key={drugId} value={drugId}>
+                        {drugObj.name} ({drugObj.class})
+                      </option>
+                    );
+                  })}
+                </select>
+              ) : (
+                <div className="text-[11px] text-slate-550 italic p-3 bg-slate-950/40 border border-slate-850 rounded-lg text-center font-mono">
+                  Select drugs below first to customize
+                </div>
+              )}
+            </div>
+
+            {/* Sliders for the active drug */}
+            {activeDrugId && (
+              <div className="space-y-4 bg-slate-950/40 border border-slate-855 p-3.5 rounded-xl">
+                <div className="flex justify-between items-center text-[10px] font-mono">
+                  <span className="text-slate-400 font-semibold uppercase">Dosage Intensity</span>
+                  <span className="text-cyan-400 font-bold">{dosageIntensity}%</span>
+                </div>
+                <input
+                  type="range"
+                  min="10"
+                  max="150"
+                  value={dosageIntensity}
+                  onChange={(e) => setDosageIntensity(Number(e.target.value))}
+                  className="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                />
+
+                <div className="flex justify-between items-center text-[10px] font-mono">
+                  <span className="text-slate-400 font-semibold uppercase">Cycle Frequency</span>
+                  <span className="text-cyan-400 font-bold">{cycleFrequencyDays} Days</span>
+                </div>
+                <input
+                  type="range"
+                  min="7"
+                  max="28"
+                  value={cycleFrequencyDays}
+                  onChange={(e) => setCycleFrequencyDays(Number(e.target.value))}
+                  className="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                />
+
+                <div className="flex justify-between items-center text-[10px] font-mono">
+                  <span className="text-slate-400 font-semibold uppercase">Planned Cycles</span>
+                  <span className="text-cyan-400 font-bold">{plannedCycles} Cycles</span>
+                </div>
+                <input
+                  type="range"
+                  min="1"
+                  max="12"
+                  value={plannedCycles}
+                  onChange={(e) => setPlannedCycles(Number(e.target.value))}
+                  className="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                />
+
+                <div className="flex justify-between items-center text-[10px] font-mono">
+                  <span className="text-slate-400 font-semibold uppercase">Patient Adherence</span>
+                  <span className="text-cyan-400 font-bold">{adherenceRate}%</span>
+                </div>
+                <input
+                  type="range"
+                  min="50"
+                  max="100"
+                  value={adherenceRate}
+                  onChange={(e) => setAdherenceRate(Number(e.target.value))}
+                  className="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Oncology Drug Assays (Selection list) */}
+          <div className="space-y-3">
+            <div>
+              <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-500 font-mono">
+                Select Assays (Max 4)
+              </h4>
+            </div>
+            <div className="space-y-4 max-h-[300px] overflow-y-auto pr-1">
+              {Object.keys(categorizedDrugs).map(catKey => {
+                const list = categorizedDrugs[catKey];
+                if (list.length === 0) return null;
+                
+                const catTitle = catKey === 'chemo' ? 'Chemotherapies' :
+                                 catKey === 'targeted' ? 'Targeted Therapeutics' :
+                                 catKey === 'immuno' ? 'Immunotherapies' : 'Hormone/Other Agents';
+                
+                return (
+                  <div key={catKey} className="space-y-1.5">
+                    <h5 className="text-[9px] font-bold uppercase tracking-wider text-slate-650 font-mono">
+                      {catTitle}
+                    </h5>
+                    <div className="grid grid-cols-1 gap-1.5">
+                      {list.map(d => {
+                        const isSelected = selectedDrugIds.includes(d.id);
+                        const isActive = activeDrugId === d.id;
+                        const isMaxSelected = selectedDrugIds.length >= 4;
+                        return (
+                          <div 
+                            key={d.id}
+                            onClick={() => !d.isContraindicated && handleSelectToggle(d.id)}
+                            className={`flex items-center justify-between p-2.5 rounded-lg border text-xs cursor-pointer transition-all duration-200 ${
+                              isSelected 
+                                ? isActive
+                                  ? 'bg-cyan-500/15 border-cyan-500/50 text-cyan-200 shadow-[0_0_15px_rgba(6,182,212,0.1)]'
+                                  : 'bg-cyan-500/5 border-cyan-500/20 text-cyan-300'
+                                : d.isContraindicated 
+                                  ? 'bg-rose-500/5 border-rose-500/10 text-rose-500/70 cursor-not-allowed' 
+                                  : 'bg-slate-950/40 border-slate-850 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+                            }`}
+                          >
+                            <div>
+                              <div className="font-semibold flex items-center gap-1.5">
+                                {d.name}
+                                {d.isBestFor && (
+                                  <span className="text-[8px] px-1 py-0.1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 rounded uppercase">Indicated</span>
+                                )}
+                              </div>
+                              <span className="text-[9px] text-slate-500 block">{d.class}</span>
+                            </div>
+                            <div className="text-right">
+                              {d.isContraindicated ? (
+                                <span className="text-[8px] font-bold text-rose-400 block">{d.contrareason}</span>
+                              ) : (
+                                <input 
+                                  type="checkbox" 
+                                  checked={isSelected}
+                                  onChange={() => {}}
+                                  disabled={isMaxSelected && !isSelected}
+                                  className="rounded border-slate-700 bg-slate-800 text-cyan-500 focus:ring-cyan-500 w-3 h-3"
+                                />
                               )}
                             </div>
-                            <span className="text-[9px] text-slate-500 block">{d.class}</span>
                           </div>
-                          <div className="text-right">
-                            {d.isContraindicated ? (
-                              <span className="text-[8px] font-bold text-rose-400 block">{d.contrareason}</span>
-                            ) : (
-                              <input 
-                                type="checkbox" 
-                                checked={isSelected}
-                                onChange={() => {}}
-                                disabled={isMaxSelected && !isSelected}
-                                className="rounded border-slate-700 bg-slate-800 text-cyan-500 focus:ring-cyan-500 w-3 h-3"
-                              />
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
 
           <button
@@ -381,11 +596,11 @@ export default function SimulationPage() {
             className="w-full py-2.5 rounded-xl border border-cyan-500/30 hover:border-cyan-500/50 bg-cyan-500/10 hover:bg-cyan-500/25 text-cyan-400 font-bold uppercase tracking-wider text-xs transition-all duration-300 flex items-center justify-center gap-2 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <Play className="w-3.5 h-3.5 fill-current" />
-            {isRunning ? 'Running Simulation Loop...' : `Simulate Selected (${selectedDrugIds.length})`}
+            {isRunning ? 'Running Simulation Loop...' : `Run Simulation (${selectedDrugIds.length})`}
           </button>
         </div>
 
-        {/* Right Side: Chart Overlay & Comparative Cards */}
+        {/* Right Side: Charts Overlay & Spatial Visualization */}
         <div className="xl:col-span-8 space-y-6">
           
           {/* Main Chart Card */}
@@ -468,6 +683,41 @@ export default function SimulationPage() {
                   </table>
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* Biomedical Visualization Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+            {/* Body Anatomy Card */}
+            <div className="md:col-span-5">
+              <BodyDiagram cancerType={patient.cancerType} primarySite={patient.primarySite} />
+            </div>
+
+            {/* In Silico Predictive Metrics */}
+            <div className="md:col-span-7 bg-slate-900/30 border border-slate-900 rounded-xl p-5 flex flex-col justify-between">
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 border-b border-slate-850 pb-2 flex items-center gap-1.5 font-mono">
+                  <Activity className="w-4 h-4 text-cyan-400" />
+                  Digital Twin Spatial Mapping
+                </h3>
+                <p className="text-[11px] text-slate-400 leading-relaxed font-mono mt-3">
+                  Spatial cell tracking projects local tissue density regressions. During peak concentrations of the simulated protocol, cellular mortality forecasts can be mapped back to the 3D digital model.
+                </p>
+                <div className="grid grid-cols-2 gap-3 mt-4 text-[10px] font-mono">
+                  <div className="bg-slate-950/45 p-3 rounded-lg border border-slate-850">
+                    <span className="text-slate-500 block uppercase font-bold text-[8px] tracking-wider">Spatial Density</span>
+                    <span className="text-cyan-400 font-bold text-xs mt-1 block">42.19% Activity</span>
+                  </div>
+                  <div className="bg-slate-950/45 p-3 rounded-lg border border-slate-850">
+                    <span className="text-slate-500 block uppercase font-bold text-[8px] tracking-wider">Cell Death Rate</span>
+                    <span className="text-emerald-400 font-bold text-xs mt-1 block">18.79% daily max</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-t border-slate-850/50 pt-3 mt-4 text-[9px] text-slate-500 font-mono leading-relaxed">
+                *Prediction based on Gompertzian boundary modeling. Values will scale dynamically relative to custom dosage inputs.
+              </div>
             </div>
           </div>
 

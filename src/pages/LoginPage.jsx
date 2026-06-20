@@ -46,18 +46,21 @@ export default function LoginPage() {
       <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-80 h-80 rounded-full bg-violet-500/10 blur-[100px] pointer-events-none" />
 
       {/* Main Container */}
-      <div className="w-full max-w-md bg-slate-900/60 backdrop-blur-xl border border-slate-800 rounded-2xl p-6 md:p-8 shadow-2xl relative z-10">
+      <div className="w-full max-w-md bg-slate-900/70 backdrop-blur-2xl border border-slate-800 rounded-2xl p-6 md:p-8 shadow-[0_0_40px_rgba(6,182,212,0.12)] relative z-10 before:content-[''] before:absolute before:inset-0 before:p-[1.5px] before:bg-gradient-to-r before:from-cyan-500/40 before:to-violet-500/40 before:rounded-2xl before:-z-10 before:pointer-events-none">
         
         {/* App Title */}
         <div className="text-center mb-6">
           <div className="inline-flex p-3 bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 rounded-xl mb-3">
             <Activity className="w-6 h-6 animate-pulse" />
           </div>
-          <h1 className="text-xl font-bold bg-gradient-to-r from-cyan-400 via-indigo-400 to-violet-400 bg-clip-text text-transparent">
+          <h1 className="text-2xl font-black bg-gradient-to-r from-cyan-400 via-indigo-400 to-violet-400 bg-clip-text text-transparent tracking-wider">
             ONCOGEN-DT
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Oncology Digital Twin & Multi-Regimen Treatment Simulator
+          <p className="text-[10px] tracking-[0.25em] text-cyan-400 font-bold uppercase mt-1">
+            ONCOLOGY DECISION SUPPORT
+          </p>
+          <p className="text-[10px] text-slate-500 mt-1.5 font-mono">
+            Digital Twin & Multi-Variable Regimen Simulator
           </p>
         </div>
 

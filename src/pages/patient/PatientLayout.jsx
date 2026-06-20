@@ -79,6 +79,10 @@ export default function PatientLayout() {
             <LogOut className="w-4 h-4" />
             Sign Out
           </button>
+
+          <div className="text-center text-[9px] text-slate-600 font-mono pt-3 border-t border-slate-950/40 opacity-70">
+            Developed by Satyam Pandey
+          </div>
         </div>
       </aside>
 

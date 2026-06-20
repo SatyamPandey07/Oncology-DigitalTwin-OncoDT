@@ -164,6 +164,11 @@ export default function LoginPage() {
             )}
           </button>
         </form>
+        
+        {/* Developer Credit inside the card */}
+        <div className="text-center text-[9px] text-slate-505 font-mono mt-6 pt-3 border-t border-slate-850/40 opacity-70">
+          Developed by Satyam Pandey
+        </div>
       </div>
 
       {/* Demo Credentials Help Box */}

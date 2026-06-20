@@ -21,6 +21,22 @@ An advanced React-based digital twin application designed for clinicians and pat
 
 ---
 
+## 🖥️ Interface Previews & Explanations
+
+### 1. Unified Authentication Gate (Clinician & Patient Portals)
+![ONCOGEN-DT Login Page](./public/screenshots/login.png)
+*A sleek, glassmorphic login interface supporting tab-based context switching. Clinicians and patients authenticate using role-specific credentials, with active neon-glowing accents indicating the selected portal session.*
+
+### 2. Multi-Variable Digital Twin Simulator (Clinician Dashboard)
+![Clinician Digital Twin Simulator](./public/screenshots/simulator.png)
+*The clinician simulation dashboard interface. It houses input parameters for customizing chemotherapy, immunotherapy, or targeted therapy protocols, displaying real-time mathematical forecasts for tumor shrinkage, systemic toxicity levels, biomonitoring, and general patient vitals.*
+
+### 3. Patient Vitals and Adherence Dashboard (Patient Portal)
+![Patient Portal Dashboard](./public/screenshots/patient_portal.png)
+*The patient-facing view tracking clinical logs, upcoming medical appointments, medication compliance rates, and real-time vital metrics including pulse rate, blood pressure, and white blood cell levels.*
+
+---
+
 ## 🧪 Simulation Architecture & Mathematical Models
 
 The digital twin simulator runs on a separate thread via **Web Workers** (`src/simulationWorker.js`) to keep the main UI thread lag-free during intense computations. It combines three clinical models:

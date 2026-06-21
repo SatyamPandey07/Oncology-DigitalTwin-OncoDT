@@ -1,5 +1,7 @@
 # Oncology Digital Twin & Multi-Variable Treatment Simulator
 
+🚀 **Live Demo:** [https://satyampandey07.github.io/Oncology-DigitalTwin-OncoDT/](https://satyampandey07.github.io/Oncology-DigitalTwin-OncoDT/)
+
 An advanced React-based digital twin application designed for clinicians and patients to simulate, analyze, and optimize multi-variable oncology treatments. The application leverages mathematical modeling running inside background threads (Web Workers) to simulate tumor dynamics, therapeutic response, drug clearance, and toxicity profiles over a 24-month horizon.
 
 ---

@@ -44,7 +44,7 @@ function LoginGuard({ children }) {
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/Oncology-DigitalTwin-OncoDT">
       <AuthProvider>
         <Routes>
           {/* Public Login Route */}
